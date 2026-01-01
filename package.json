@@ -1,19 +1,23 @@
 {
   "name": "opencode-time-refresh",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "OpenCode plugin for automatic time injection into messages",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/plugin.js",
+  "types": "dist/plugin.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js"
+    },
+    "./utils": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "npm run build:bundle && npm run build:types",
-    "build:bundle": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --external:fs --external:path --external:@opencode-ai/plugin",
+    "build:bundle": "esbuild src/plugin.ts --bundle --platform=node --format=esm --outfile=dist/plugin.js --external:fs --external:path --external:@opencode-ai/plugin && esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --external:fs --external:path --external:@opencode-ai/plugin",
     "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
     "test": "vitest run",
     "test:watch": "vitest",
