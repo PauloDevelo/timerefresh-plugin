@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2026-01-01
 
 ### Changed
-- **BREAKING**: Now uses `experimental.chat.system.transform` hook instead of non-existent `tui.prompt.append`
+- **BREAKING**: Now uses `chat.message` hook to append time to each user message
 - Uses official `@opencode-ai/plugin` types as peer dependency
-- Time is now injected into the system prompt rather than appended to user messages
+- Time is appended to user messages, creating a timeline in conversation history
 
 ### Fixed
 - Fixed plugin loading by using correct OpenCode hook API

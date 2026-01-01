@@ -28,6 +28,19 @@ function createMockContext(directory = '/test/project'): PluginInput {
   };
 }
 
+/**
+ * Creates a mock text part for testing
+ */
+function createMockTextPart(text: string, sessionID = 'session-1', messageID = 'msg-1') {
+  return {
+    id: `part-${Date.now()}`,
+    sessionID,
+    messageID,
+    type: 'text' as const,
+    text,
+  };
+}
+
 describe('Plugin Metadata', () => {
   it('should export VERSION constant', () => {
     expect(VERSION).toBe('0.5.0');
@@ -118,14 +131,14 @@ describe('TimeRefreshPlugin', () => {
     it('should return hooks when enabled (default)', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
-      expect(hooks).toHaveProperty('experimental.chat.system.transform');
+      expect(hooks).toHaveProperty('chat.message');
     });
 
     it('should use default config when no config file exists', async () => {
       const ctx = createMockContext('/nonexistent/path');
       const hooks = await TimeRefreshPlugin(ctx);
       // Default is enabled: true, so should have hooks
-      expect(hooks).toHaveProperty('experimental.chat.system.transform');
+      expect(hooks).toHaveProperty('chat.message');
     });
 
     it('should handle context with minimal properties', async () => {
@@ -143,33 +156,80 @@ describe('TimeRefreshPlugin', () => {
     });
   });
 
-  describe('experimental.chat.system.transform hook', () => {
-    it('should append time to system prompt', async () => {
+  describe('chat.message hook', () => {
+    it('should append time to existing text part', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
-      const input = {};
-      const output = { system: [] as string[] };
+      const input = { sessionID: 'session-1', messageID: 'msg-1' };
+      const textPart = createMockTextPart('Hello, world!');
+      const output = { 
+        message: {} as any, 
+        parts: [textPart] as any[]
+      };
 
-      await hooks['experimental.chat.system.transform']!(input, output);
+      await hooks['chat.message']!(input, output);
 
-      // Output should have time appended
-      expect(output.system.length).toBe(1);
-      expect(output.system[0]).toContain('[Current time:');
+      // Text should have time appended
+      expect(output.parts[0].text).toContain('Hello, world!');
+      expect(output.parts[0].text).toContain('[Current time:');
+    });
+
+    it('should add new text part when no text parts exist', async () => {
+      const ctx = createMockContext();
+      const hooks = await TimeRefreshPlugin(ctx);
+
+      const input = { sessionID: 'session-1', messageID: 'msg-1' };
+      const output = { 
+        message: {} as any, 
+        parts: [] as any[]
+      };
+
+      await hooks['chat.message']!(input, output);
+
+      // Should have added a new part
+      expect(output.parts.length).toBe(1);
+      expect(output.parts[0].type).toBe('text');
+      expect(output.parts[0].text).toContain('[Current time:');
     });
 
     it('should use ISO format by default', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
-      const input = {};
-      const output = { system: [] as string[] };
+      const input = { sessionID: 'session-1', messageID: 'msg-1' };
+      const textPart = createMockTextPart('Test message');
+      const output = { 
+        message: {} as any, 
+        parts: [textPart] as any[]
+      };
 
-      await hooks['experimental.chat.system.transform']!(input, output);
+      await hooks['chat.message']!(input, output);
 
       // ISO format contains 'T' and 'Z'
-      expect(output.system[0]).toContain('T');
-      expect(output.system[0]).toContain('Z');
+      expect(output.parts[0].text).toContain('T');
+      expect(output.parts[0].text).toContain('Z');
+    });
+
+    it('should append to the last text part when multiple exist', async () => {
+      const ctx = createMockContext();
+      const hooks = await TimeRefreshPlugin(ctx);
+
+      const input = { sessionID: 'session-1', messageID: 'msg-1' };
+      const textPart1 = createMockTextPart('First part');
+      const textPart2 = createMockTextPart('Second part');
+      const output = { 
+        message: {} as any, 
+        parts: [textPart1, textPart2] as any[]
+      };
+
+      await hooks['chat.message']!(input, output);
+
+      // First part should be unchanged
+      expect(output.parts[0].text).toBe('First part');
+      // Second part should have time appended
+      expect(output.parts[1].text).toContain('Second part');
+      expect(output.parts[1].text).toContain('[Current time:');
     });
   });
 });

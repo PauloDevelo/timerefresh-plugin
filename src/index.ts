@@ -155,13 +155,13 @@ export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
     return {};
   }
 
-  // Return hooks for system prompt transformation
+  // Return hooks for user message transformation
   return {
     /**
-     * Hook called to transform the system prompt.
-     * Appends the current time to the system prompt.
+     * Hook called when a new user message is received.
+     * Appends the current time to the user's message parts.
      */
-    'experimental.chat.system.transform': async (_input, output) => {
+    'chat.message': async (_input, output) => {
       // Only append if includeInEveryMessage is enabled
       if (!config.includeInEveryMessage) {
         return;
@@ -171,8 +171,26 @@ export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
       const now = new Date();
       const timeString = formatTime(now, config);
 
-      // Append time to the system prompt
-      output.system.push(timeString);
+      // Find the last text part and append time to it
+      // Or add a new text part with the time
+      const textParts = output.parts.filter((p): p is { type: 'text'; text: string; id: string; sessionID: string; messageID: string } => 
+        p.type === 'text'
+      );
+
+      if (textParts.length > 0) {
+        // Append to the last text part
+        const lastTextPart = textParts[textParts.length - 1];
+        lastTextPart.text = `${lastTextPart.text}\n\n${timeString}`;
+      } else {
+        // Add a new text part with just the time
+        output.parts.push({
+          id: `time-${Date.now()}`,
+          sessionID: _input.sessionID,
+          messageID: _input.messageID || '',
+          type: 'text',
+          text: timeString,
+        } as typeof output.parts[number]);
+      }
     },
   };
 };
