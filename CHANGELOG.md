@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-01
+
+### Changed
+- **BREAKING**: Now uses `experimental.chat.system.transform` hook instead of non-existent `tui.prompt.append`
+- Uses official `@opencode-ai/plugin` types as peer dependency
+- Time is now injected into the system prompt rather than appended to user messages
+
+### Fixed
+- Fixed plugin loading by using correct OpenCode hook API
+- Plugin now properly typed with `Plugin`, `PluginInput`, and `Hooks` from `@opencode-ai/plugin`
+
 ## [0.4.0] - 2026-01-01
 
 ### Changed

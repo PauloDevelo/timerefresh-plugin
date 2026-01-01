@@ -107,78 +107,12 @@ export interface ValidationResult {
 }
 
 // ============================================================================
-// OpenCode Plugin API Types
+// OpenCode Plugin API Types (from @opencode-ai/plugin)
 // ============================================================================
 
-/**
- * Shell API provided by Bun for executing commands.
- */
-export type ShellAPI = (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
-
-/**
- * Context provided to the plugin by OpenCode.
- */
-export interface PluginContext {
-  /** The current project information */
-  project: {
-    name?: string;
-    path?: string;
-  };
-
-  /** The current working directory */
-  directory: string;
-
-  /** The git worktree path */
-  worktree?: string;
-
-  /** OpenCode SDK client for interacting with the AI */
-  client: unknown;
-
-  /** Bun's shell API for executing commands */
-  $: ShellAPI;
-}
-
-/**
- * TUI prompt append event input.
- */
-export interface TuiPromptAppendInput {
-  /** The current prompt text */
-  prompt: string;
-}
-
-/**
- * TUI prompt append event output.
- */
-export interface TuiPromptAppendOutput {
-  /** Text to append to the prompt */
-  append: string;
-}
-
-/**
- * Available plugin hooks for OpenCode events.
- */
-export interface PluginHooks {
-  /** Hook called to append text to the TUI prompt */
-  'tui.prompt.append'?: (
-    input: TuiPromptAppendInput,
-    output: TuiPromptAppendOutput
-  ) => Promise<void> | void;
-
-  /** Hook called when a session is created */
-  'session.created'?: () => Promise<void> | void;
-
-  /** Hook called when a session becomes idle */
-  'session.idle'?: () => Promise<void> | void;
-
-  /** Generic event handler */
-  event?: (data: { event: { type: string; [key: string]: unknown } }) => Promise<void> | void;
-}
-
-/**
- * Plugin factory function type.
- * Receives context and returns available hooks.
- */
-export type Plugin = (ctx: PluginContext) => Promise<PluginHooks>;
+// Re-export types from @opencode-ai/plugin for convenience
+export type {
+  Plugin,
+  PluginInput,
+  Hooks,
+} from '@opencode-ai/plugin';

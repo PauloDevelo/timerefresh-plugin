@@ -12,24 +12,25 @@ import {
   getFormattedTime,
   DEFAULT_CONFIG,
 } from '../src/index.js';
-import type { PluginContext, TuiPromptAppendInput, TuiPromptAppendOutput } from '../src/types.js';
+import type { PluginInput, Hooks } from '@opencode-ai/plugin';
 
 /**
- * Creates a mock PluginContext for testing
+ * Creates a mock PluginInput for testing
  */
-function createMockContext(directory = '/test/project'): PluginContext {
+function createMockContext(directory = '/test/project'): PluginInput {
   return {
-    project: { name: 'test-project', path: directory },
+    project: { worktree: directory } as PluginInput['project'],
     directory,
     worktree: directory,
-    client: {},
-    $: vi.fn() as unknown as PluginContext['$'],
+    serverUrl: new URL('http://localhost:3000'),
+    client: {} as PluginInput['client'],
+    $: vi.fn() as unknown as PluginInput['$'],
   };
 }
 
 describe('Plugin Metadata', () => {
   it('should export VERSION constant', () => {
-    expect(VERSION).toBe('0.4.0');
+    expect(VERSION).toBe('0.5.0');
   });
 
   it('should export pluginMeta with correct properties', () => {
@@ -117,22 +118,24 @@ describe('TimeRefreshPlugin', () => {
     it('should return hooks when enabled (default)', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
-      expect(hooks).toHaveProperty('tui.prompt.append');
+      expect(hooks).toHaveProperty('experimental.chat.system.transform');
     });
 
     it('should use default config when no config file exists', async () => {
       const ctx = createMockContext('/nonexistent/path');
       const hooks = await TimeRefreshPlugin(ctx);
       // Default is enabled: true, so should have hooks
-      expect(hooks).toHaveProperty('tui.prompt.append');
+      expect(hooks).toHaveProperty('experimental.chat.system.transform');
     });
 
     it('should handle context with minimal properties', async () => {
-      const ctx: PluginContext = {
-        project: {},
+      const ctx: PluginInput = {
+        project: {} as PluginInput['project'],
         directory: '/test',
-        client: {},
-        $: vi.fn() as unknown as PluginContext['$'],
+        worktree: '/test',
+        serverUrl: new URL('http://localhost:3000'),
+        client: {} as PluginInput['client'],
+        $: vi.fn() as unknown as PluginInput['$'],
       };
 
       const hooks = await TimeRefreshPlugin(ctx);
@@ -140,46 +143,33 @@ describe('TimeRefreshPlugin', () => {
     });
   });
 
-  describe('tui.prompt.append hook', () => {
-    it('should append time to output', async () => {
+  describe('experimental.chat.system.transform hook', () => {
+    it('should append time to system prompt', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
-      const input: TuiPromptAppendInput = { prompt: 'Hello' };
-      const output: TuiPromptAppendOutput = { append: '' };
+      const input = {};
+      const output = { system: [] as string[] };
 
-      await hooks['tui.prompt.append']!(input, output);
+      await hooks['experimental.chat.system.transform']!(input, output);
 
       // Output should have time appended
-      expect(output.append).toContain('[Current time:');
-    });
-
-    it('should not append when includeInEveryMessage is false', async () => {
-      // This test would require a config file, so we test the default behavior
-      const ctx = createMockContext();
-      const hooks = await TimeRefreshPlugin(ctx);
-
-      const input: TuiPromptAppendInput = { prompt: 'Hello' };
-      const output: TuiPromptAppendOutput = { append: '' };
-
-      await hooks['tui.prompt.append']!(input, output);
-
-      // With default config (includeInEveryMessage: true), should append
-      expect(output.append).toBeTruthy();
+      expect(output.system.length).toBe(1);
+      expect(output.system[0]).toContain('[Current time:');
     });
 
     it('should use ISO format by default', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
-      const input: TuiPromptAppendInput = { prompt: 'Hello' };
-      const output: TuiPromptAppendOutput = { append: '' };
+      const input = {};
+      const output = { system: [] as string[] };
 
-      await hooks['tui.prompt.append']!(input, output);
+      await hooks['experimental.chat.system.transform']!(input, output);
 
       // ISO format contains 'T' and 'Z'
-      expect(output.append).toContain('T');
-      expect(output.append).toContain('Z');
+      expect(output.system[0]).toContain('T');
+      expect(output.system[0]).toContain('Z');
     });
   });
 });

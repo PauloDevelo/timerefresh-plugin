@@ -4,12 +4,10 @@
  * @module opencode-time-refresh
  */
 
+import type { Plugin, PluginInput, Hooks } from '@opencode-ai/plugin';
 import type {
   TimeRefreshConfig,
   TimeContext,
-  Plugin,
-  PluginContext,
-  PluginHooks,
 } from './types.js';
 import { loadConfig, validateConfig, DEFAULT_CONFIG } from './config.js';
 import { formatTime, createTimeContext } from './formatter.js';
@@ -23,7 +21,7 @@ import * as path from 'path';
 /**
  * Plugin version - kept in sync with package.json
  */
-export const VERSION = '0.4.0';
+export const VERSION = '0.5.0';
 
 /**
  * Config file name for plugin-specific configuration
@@ -122,17 +120,11 @@ export function getFormattedTime(config?: Partial<TimeRefreshConfig>): string {
 
 /**
  * TimeRefreshPlugin factory function.
- * Creates a plugin instance that hooks into OpenCode TUI events
- * to inject current time context into prompts.
+ * Creates a plugin instance that hooks into OpenCode events
+ * to inject current time context into the system prompt.
  *
  * @param ctx - Plugin context provided by OpenCode
- * @returns Plugin hooks for prompt processing
- *
- * @example
- * ```typescript
- * // .opencode/plugin/time-refresh.ts
- * export { plugin } from 'opencode-time-refresh';
- * ```
+ * @returns Plugin hooks for system prompt transformation
  *
  * @example
  * ```json
@@ -142,7 +134,7 @@ export function getFormattedTime(config?: Partial<TimeRefreshConfig>): string {
  * }
  * ```
  */
-export const plugin: Plugin = async (ctx: PluginContext): Promise<PluginHooks> => {
+export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
   // Load configuration from file in project directory
   const fileConfig = loadConfigFromFile(ctx.directory);
 
@@ -163,13 +155,13 @@ export const plugin: Plugin = async (ctx: PluginContext): Promise<PluginHooks> =
     return {};
   }
 
-  // Return hooks for TUI prompt processing
+  // Return hooks for system prompt transformation
   return {
     /**
-     * Hook called when the TUI prompt is being prepared.
-     * Appends the current time to the user's prompt.
+     * Hook called to transform the system prompt.
+     * Appends the current time to the system prompt.
      */
-    'tui.prompt.append': async (_input, output) => {
+    'experimental.chat.system.transform': async (_input, output) => {
       // Only append if includeInEveryMessage is enabled
       if (!config.includeInEveryMessage) {
         return;
@@ -179,8 +171,8 @@ export const plugin: Plugin = async (ctx: PluginContext): Promise<PluginHooks> =
       const now = new Date();
       const timeString = formatTime(now, config);
 
-      // Append time to the prompt
-      output.append = timeString;
+      // Append time to the system prompt
+      output.system.push(timeString);
     },
   };
 };
