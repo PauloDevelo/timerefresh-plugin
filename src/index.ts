@@ -13,6 +13,8 @@ import type {
 } from './types.js';
 import { loadConfig, validateConfig, DEFAULT_CONFIG } from './config.js';
 import { formatTime, createTimeContext } from './formatter.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // ============================================================================
 // Constants
@@ -22,6 +24,11 @@ import { formatTime, createTimeContext } from './formatter.js';
  * Plugin version - kept in sync with package.json
  */
 export const VERSION = '0.1.0';
+
+/**
+ * Config file name for plugin-specific configuration
+ */
+const CONFIG_FILE_NAME = 'time-refresh.json';
 
 // ============================================================================
 // Plugin Metadata
@@ -35,6 +42,37 @@ export const pluginMeta = {
   version: VERSION,
   description: 'Automatically inject current time into messages',
 } as const;
+
+// ============================================================================
+// Configuration Loading
+// ============================================================================
+
+/**
+ * Attempts to load plugin configuration from a JSON file.
+ * Looks for time-refresh.json in .opencode directory or project root.
+ *
+ * @param directory - The project directory to search in
+ * @returns Partial configuration or undefined if not found
+ */
+function loadConfigFromFile(directory: string): Partial<TimeRefreshConfig> | undefined {
+  const possiblePaths = [
+    path.join(directory, '.opencode', CONFIG_FILE_NAME),
+    path.join(directory, CONFIG_FILE_NAME),
+  ];
+
+  for (const configPath of possiblePaths) {
+    try {
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf-8');
+        return JSON.parse(content) as Partial<TimeRefreshConfig>;
+      }
+    } catch {
+      // Ignore errors, continue to next path
+    }
+  }
+
+  return undefined;
+}
 
 // ============================================================================
 // Helper Functions
@@ -84,33 +122,32 @@ export function getFormattedTime(config?: Partial<TimeRefreshConfig>): string {
 
 /**
  * TimeRefreshPlugin factory function.
- * Creates a plugin instance that hooks into OpenCode message events
- * to inject current time context.
+ * Creates a plugin instance that hooks into OpenCode TUI events
+ * to inject current time context into prompts.
  *
  * @param ctx - Plugin context provided by OpenCode
- * @returns Plugin hooks for message processing
+ * @returns Plugin hooks for prompt processing
  *
  * @example
  * ```typescript
- * // In OpenCode configuration
- * import { TimeRefreshPlugin } from 'opencode-time-refresh';
+ * // .opencode/plugin/time-refresh.ts
+ * export { TimeRefreshPlugin } from 'opencode-time-refresh';
+ * ```
  *
- * export default {
- *   plugins: [TimeRefreshPlugin],
- *   timeRefresh: {
- *     enabled: true,
- *     format: 'locale',
- *     timezone: 'America/New_York'
- *   }
- * };
+ * @example
+ * ```json
+ * // opencode.json
+ * {
+ *   "plugin": ["opencode-time-refresh"]
+ * }
  * ```
  */
 export const TimeRefreshPlugin: Plugin = async (ctx: PluginContext): Promise<PluginHooks> => {
-  // Extract user configuration from context
-  const userConfig = ctx.config?.timeRefresh as Partial<TimeRefreshConfig> | undefined;
+  // Load configuration from file in project directory
+  const fileConfig = loadConfigFromFile(ctx.directory);
 
-  // Load configuration with defaults
-  const config = loadConfig(userConfig);
+  // Merge with defaults
+  const config = loadConfig(fileConfig);
 
   // Validate configuration and warn on errors
   const validation = validateConfig(config);
@@ -126,39 +163,24 @@ export const TimeRefreshPlugin: Plugin = async (ctx: PluginContext): Promise<Plu
     return {};
   }
 
-  // Return hooks for message processing
+  // Return hooks for TUI prompt processing
   return {
     /**
-     * Hook called when a message is updated.
-     * Injects time context into user messages when configured.
-     *
-     * Note: The exact injection mechanism depends on OpenCode's API.
-     * This hook makes time data available for OpenCode to use.
+     * Hook called when the TUI prompt is being prepared.
+     * Appends the current time to the user's prompt.
      */
-    'message.updated': async (input, output) => {
-      // Only process if includeInEveryMessage is enabled
+    'tui.prompt.append': async (_input, output) => {
+      // Only append if includeInEveryMessage is enabled
       if (!config.includeInEveryMessage) {
         return;
       }
 
-      // Only inject time into user messages
-      if (input.role !== 'user') {
-        return;
-      }
-
-      // Generate time data
+      // Generate time string
       const now = new Date();
       const timeString = formatTime(now, config);
-      const timeContext = createTimeContext(now, config.timezone || undefined);
 
-      // Prepend time string to the output content
-      // This modifies the message that will be sent to the LLM
-      output.content = `${timeString}\n\n${output.content}`;
-
-      // Attach time context as metadata for potential use by OpenCode
-      // This allows OpenCode to access structured time data if needed
-      (output as unknown as Record<string, unknown>)._timeContext = timeContext;
-      (output as unknown as Record<string, unknown>)._timeString = timeString;
+      // Append time to the prompt
+      output.append = timeString;
     },
   };
 };

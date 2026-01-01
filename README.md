@@ -7,6 +7,7 @@ An OpenCode plugin that automatically injects current time context into messages
 
 ## Features
 
+- **Automatic Time Injection** - Appends current time to every prompt
 - **Multiple Format Options** - ISO 8601, locale-specific, or custom format strings
 - **Timezone Support** - Full IANA timezone support (e.g., `America/New_York`, `Europe/London`)
 - **Configurable Output** - Customizable prefix and suffix for time strings
@@ -23,19 +24,72 @@ npm install opencode-time-refresh
 
 ## Quick Start
 
+### Option 1: Add to opencode.json (simplest)
+
 Add the plugin to your OpenCode configuration:
 
 ```json
 {
-  "plugins": ["opencode-time-refresh"],
-  "timeRefresh": {
-    "enabled": true,
-    "format": "iso"
-  }
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["opencode-time-refresh"]
 }
 ```
 
+This uses the default configuration (ISO format, system timezone).
+
+### Option 2: With custom configuration
+
+Create a `time-refresh.json` file in your `.opencode` directory:
+
+```
+your-project/
+├── .opencode/
+│   └── time-refresh.json    <-- Plugin configuration
+└── opencode.json
+```
+
+**.opencode/time-refresh.json:**
+```json
+{
+  "enabled": true,
+  "format": "locale",
+  "timezone": "America/New_York",
+  "prefix": "[Time: ",
+  "suffix": "]"
+}
+```
+
+**opencode.json:**
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["opencode-time-refresh"]
+}
+```
+
+### Option 3: Local plugin file
+
+Create a plugin file that re-exports the plugin:
+
+**.opencode/plugin/time-refresh.ts:**
+```typescript
+export { TimeRefreshPlugin } from 'opencode-time-refresh';
+```
+
+## How It Works
+
+The plugin hooks into OpenCode's `tui.prompt.append` event to automatically append the current time to every user prompt. This ensures the AI always has accurate temporal context.
+
+**Example output:**
+```
+Your message here
+
+[Current time: 2026-01-15T10:30:00.000Z]
+```
+
 ## Configuration Options
+
+Create a `time-refresh.json` file in your `.opencode` directory or project root:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -53,9 +107,7 @@ Add the plugin to your OpenCode configuration:
 
 ```json
 {
-  "timeRefresh": {
-    "format": "iso"
-  }
+  "format": "iso"
 }
 ```
 
@@ -67,10 +119,8 @@ Uses the system's locale settings for formatting:
 
 ```json
 {
-  "timeRefresh": {
-    "format": "locale",
-    "timezone": "America/New_York"
-  }
+  "format": "locale",
+  "timezone": "America/New_York"
 }
 ```
 
@@ -82,11 +132,9 @@ Define your own format using tokens:
 
 ```json
 {
-  "timeRefresh": {
-    "format": "custom",
-    "customFormat": "YYYY-MM-DD HH:mm:ss",
-    "timezone": "UTC"
-  }
+  "format": "custom",
+  "customFormat": "YYYY-MM-DD HH:mm:ss",
+  "timezone": "UTC"
 }
 ```
 
@@ -137,9 +185,7 @@ Use any valid IANA timezone identifier:
 
 ```json
 {
-  "timeRefresh": {
-    "timezone": "America/New_York"
-  }
+  "timezone": "America/New_York"
 }
 ```
 
@@ -147,6 +193,7 @@ Common timezone examples:
 - `UTC` - Coordinated Universal Time
 - `America/New_York` - Eastern Time
 - `America/Los_Angeles` - Pacific Time
+- `America/Vancouver` - Pacific Time (Canada)
 - `Europe/London` - British Time
 - `Europe/Paris` - Central European Time
 - `Asia/Tokyo` - Japan Standard Time
@@ -295,20 +342,53 @@ import type {
 
 ## Full Configuration Example
 
+**.opencode/time-refresh.json:**
 ```json
 {
-  "plugins": ["opencode-time-refresh"],
-  "timeRefresh": {
-    "enabled": true,
-    "format": "custom",
-    "customFormat": "YYYY-MM-DD HH:mm:ss",
-    "timezone": "America/New_York",
-    "includeInEveryMessage": true,
-    "prefix": "[Current time: ",
-    "suffix": "]"
-  }
+  "enabled": true,
+  "format": "custom",
+  "customFormat": "YYYY-MM-DD HH:mm:ss",
+  "timezone": "America/New_York",
+  "includeInEveryMessage": true,
+  "prefix": "[Current time: ",
+  "suffix": "]"
 }
 ```
+
+**opencode.json:**
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["opencode-time-refresh"]
+}
+```
+
+## Troubleshooting
+
+### Plugin not loading
+
+Make sure you're using `"plugin"` (singular) not `"plugins"` in your opencode.json:
+
+```json
+{
+  "plugin": ["opencode-time-refresh"]
+}
+```
+
+### Configuration not being applied
+
+The plugin looks for configuration in these locations (in order):
+1. `.opencode/time-refresh.json`
+2. `time-refresh.json` (project root)
+
+If no config file is found, default settings are used.
+
+### Time not appearing in prompts
+
+Check that:
+1. `enabled` is `true` (default)
+2. `includeInEveryMessage` is `true` (default)
+3. The plugin is listed in your `opencode.json`
 
 ## License
 

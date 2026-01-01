@@ -107,43 +107,74 @@ export interface ValidationResult {
 }
 
 // ============================================================================
-// OpenCode Plugin API Types (Stubs)
+// OpenCode Plugin API Types
 // ============================================================================
 
 /**
+ * Shell API provided by Bun for executing commands.
+ */
+export type ShellAPI = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
+
+/**
  * Context provided to the plugin by OpenCode.
- * Contains configuration and runtime information.
  */
 export interface PluginContext {
-  /** Plugin configuration as key-value pairs */
-  config: Record<string, unknown>;
+  /** The current project information */
+  project: {
+    name?: string;
+    path?: string;
+  };
+
+  /** The current working directory */
+  directory: string;
+
+  /** The git worktree path */
+  worktree?: string;
+
+  /** OpenCode SDK client for interacting with the AI */
+  client: unknown;
+
+  /** Bun's shell API for executing commands */
+  $: ShellAPI;
 }
 
 /**
- * Input message structure for plugin hooks.
+ * TUI prompt append event input.
  */
-export interface MessageInput {
-  /** The message content */
-  content: string;
-
-  /** The role of the message sender */
-  role: 'user' | 'assistant' | 'system';
+export interface TuiPromptAppendInput {
+  /** The current prompt text */
+  prompt: string;
 }
 
 /**
- * Output message structure for plugin hooks.
+ * TUI prompt append event output.
  */
-export interface MessageOutput {
-  /** The processed message content */
-  content: string;
+export interface TuiPromptAppendOutput {
+  /** Text to append to the prompt */
+  append: string;
 }
 
 /**
- * Available plugin hooks for message processing.
+ * Available plugin hooks for OpenCode events.
  */
 export interface PluginHooks {
-  /** Hook called when a message is updated */
-  'message.updated'?: (input: MessageInput, output: MessageOutput) => Promise<void>;
+  /** Hook called to append text to the TUI prompt */
+  'tui.prompt.append'?: (
+    input: TuiPromptAppendInput,
+    output: TuiPromptAppendOutput
+  ) => Promise<void> | void;
+
+  /** Hook called when a session is created */
+  'session.created'?: () => Promise<void> | void;
+
+  /** Hook called when a session becomes idle */
+  'session.idle'?: () => Promise<void> | void;
+
+  /** Generic event handler */
+  event?: (data: { event: { type: string; [key: string]: unknown } }) => Promise<void> | void;
 }
 
 /**
