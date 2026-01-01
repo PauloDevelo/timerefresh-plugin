@@ -23,7 +23,7 @@ import * as path from 'path';
 /**
  * Plugin version - kept in sync with package.json
  */
-export const VERSION = '0.1.0';
+export const VERSION = '0.4.0';
 
 /**
  * Config file name for plugin-specific configuration

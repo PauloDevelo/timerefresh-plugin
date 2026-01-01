@@ -1,6 +1,6 @@
 {
   "name": "opencode-time-refresh",
-  "version": "0.2.1",
+  "version": "0.4.0",
   "description": "OpenCode plugin for automatic time injection into messages",
   "type": "module",
   "main": "dist/index.js",
@@ -12,7 +12,9 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:bundle && npm run build:types",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --external:fs --external:path",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -48,6 +50,7 @@
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@vitest/coverage-v8": "^1.0.0",
+    "esbuild": "^0.27.2",
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
   }

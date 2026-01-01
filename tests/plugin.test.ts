@@ -29,7 +29,7 @@ function createMockContext(directory = '/test/project'): PluginContext {
 
 describe('Plugin Metadata', () => {
   it('should export VERSION constant', () => {
-    expect(VERSION).toBe('0.1.0');
+    expect(VERSION).toBe('0.4.0');
   });
 
   it('should export pluginMeta with correct properties', () => {
