@@ -4,6 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
+  plugin,
   TimeRefreshPlugin,
   pluginMeta,
   VERSION,
@@ -184,9 +185,13 @@ describe('TimeRefreshPlugin', () => {
 });
 
 describe('Default export', () => {
-  it('should export TimeRefreshPlugin as default', async () => {
+  it('should export plugin as default', async () => {
     const defaultExport = (await import('../src/index.js')).default;
-    expect(defaultExport).toBe(TimeRefreshPlugin);
+    expect(defaultExport).toBe(plugin);
+  });
+
+  it('should have TimeRefreshPlugin as alias for plugin', () => {
+    expect(TimeRefreshPlugin).toBe(plugin);
   });
 });
 

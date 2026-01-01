@@ -131,7 +131,7 @@ export function getFormattedTime(config?: Partial<TimeRefreshConfig>): string {
  * @example
  * ```typescript
  * // .opencode/plugin/time-refresh.ts
- * export { TimeRefreshPlugin } from 'opencode-time-refresh';
+ * export { plugin } from 'opencode-time-refresh';
  * ```
  *
  * @example
@@ -142,7 +142,7 @@ export function getFormattedTime(config?: Partial<TimeRefreshConfig>): string {
  * }
  * ```
  */
-export const TimeRefreshPlugin: Plugin = async (ctx: PluginContext): Promise<PluginHooks> => {
+export const plugin: Plugin = async (ctx: PluginContext): Promise<PluginHooks> => {
   // Load configuration from file in project directory
   const fileConfig = loadConfigFromFile(ctx.directory);
 
@@ -202,12 +202,15 @@ export * from './formatter.js';
 // Default Export
 // ============================================================================
 
+// Alias for backwards compatibility
+export const TimeRefreshPlugin = plugin;
+
 /**
  * Default export for convenient importing.
  *
  * @example
  * ```typescript
- * import TimeRefreshPlugin from 'opencode-time-refresh';
+ * import plugin from 'opencode-time-refresh';
  * ```
  */
-export default TimeRefreshPlugin;
+export default plugin;
