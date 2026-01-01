@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { plugin } from '../src/plugin.js';
+import plugin from '../src/plugin.js';
 import {
   pluginMeta,
   VERSION,
@@ -262,10 +262,12 @@ describe('TimeRefreshPlugin', () => {
 });
 
 describe('Default export', () => {
-  it('should export plugin as default from plugin.ts', async () => {
-    const { default: defaultExport, plugin: namedExport } = await import('../src/plugin.js');
-    expect(defaultExport).toBe(namedExport);
-    expect(typeof defaultExport).toBe('function');
+  it('should export only default from plugin.ts (no named exports)', async () => {
+    const mod = await import('../src/plugin.js');
+    // Should only have 'default' export - no named 'plugin' export
+    // This is critical: OpenCode calls every export as a plugin function
+    expect(Object.keys(mod)).toEqual(['default']);
+    expect(typeof mod.default).toBe('function');
   });
 
   it('should export plugin from index.js (utils entry)', async () => {

@@ -181,7 +181,7 @@ function loadConfigFromFile(directory: string): Partial<TimeRefreshConfig> | und
  * OpenCode Time Refresh Plugin
  * Automatically injects current time into user messages.
  */
-export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
+const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
   const fileConfig = loadConfigFromFile(ctx.directory);
   const config = loadConfig(fileConfig);
 
@@ -227,5 +227,6 @@ export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
   };
 };
 
-// Only export the plugin function - nothing else!
+// IMPORTANT: Only export default - OpenCode iterates all exports and calls each as a plugin!
+// If we export both `plugin` and `default`, the plugin runs twice.
 export default plugin;
