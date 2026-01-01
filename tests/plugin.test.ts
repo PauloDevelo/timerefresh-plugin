@@ -3,9 +3,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { plugin } from '../src/plugin.js';
 import {
-  plugin,
-  TimeRefreshPlugin,
   pluginMeta,
   VERSION,
   getTimeContext,
@@ -13,6 +12,9 @@ import {
   DEFAULT_CONFIG,
 } from '../src/index.js';
 import type { PluginInput, Hooks } from '@opencode-ai/plugin';
+
+// Alias for tests
+const TimeRefreshPlugin = plugin;
 
 /**
  * Creates a mock PluginInput for testing
@@ -157,7 +159,7 @@ describe('TimeRefreshPlugin', () => {
   });
 
   describe('chat.message hook', () => {
-    it('should append time to existing text part', async () => {
+    it('should prepend time to existing text part', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
@@ -170,12 +172,14 @@ describe('TimeRefreshPlugin', () => {
 
       await hooks['chat.message']!(input, output);
 
-      // Text should have time appended
+      // Text should have time prepended
       expect(output.parts[0].text).toContain('Hello, world!');
       expect(output.parts[0].text).toContain('[Current time:');
+      // Time should be at the beginning
+      expect(output.parts[0].text.startsWith('[Current time:')).toBe(true);
     });
 
-    it('should add new text part when no text parts exist', async () => {
+    it('should add new text part at beginning when no text parts exist', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
@@ -211,7 +215,7 @@ describe('TimeRefreshPlugin', () => {
       expect(output.parts[0].text).toContain('Z');
     });
 
-    it('should append to the last text part when multiple exist', async () => {
+    it('should prepend to the first text part when multiple exist', async () => {
       const ctx = createMockContext();
       const hooks = await TimeRefreshPlugin(ctx);
 
@@ -225,23 +229,49 @@ describe('TimeRefreshPlugin', () => {
 
       await hooks['chat.message']!(input, output);
 
-      // First part should be unchanged
-      expect(output.parts[0].text).toBe('First part');
-      // Second part should have time appended
-      expect(output.parts[1].text).toContain('Second part');
-      expect(output.parts[1].text).toContain('[Current time:');
+      // First part should have time prepended
+      expect(output.parts[0].text).toContain('First part');
+      expect(output.parts[0].text).toContain('[Current time:');
+      expect(output.parts[0].text.startsWith('[Current time:')).toBe(true);
+      // Second part should be unchanged
+      expect(output.parts[1].text).toBe('Second part');
+    });
+
+    it('should not process the same message twice', async () => {
+      const ctx = createMockContext();
+      const hooks = await TimeRefreshPlugin(ctx);
+
+      const input = { sessionID: 'session-1', messageID: 'msg-1' };
+      const textPart = createMockTextPart('Hello');
+      const output = { 
+        message: {} as any, 
+        parts: [textPart] as any[]
+      };
+
+      // Call twice with same messageID
+      await hooks['chat.message']!(input, output);
+      const textAfterFirst = output.parts[0].text;
+      
+      await hooks['chat.message']!(input, output);
+      const textAfterSecond = output.parts[0].text;
+
+      // Text should be the same after both calls (no duplicate time)
+      expect(textAfterFirst).toBe(textAfterSecond);
     });
   });
 });
 
 describe('Default export', () => {
-  it('should export plugin as default', async () => {
-    const defaultExport = (await import('../src/index.js')).default;
-    expect(defaultExport).toBe(plugin);
+  it('should export plugin as default from plugin.ts', async () => {
+    const { default: defaultExport, plugin: namedExport } = await import('../src/plugin.js');
+    expect(defaultExport).toBe(namedExport);
+    expect(typeof defaultExport).toBe('function');
   });
 
-  it('should have TimeRefreshPlugin as alias for plugin', () => {
-    expect(TimeRefreshPlugin).toBe(plugin);
+  it('should export plugin from index.js (utils entry)', async () => {
+    const { plugin: indexPlugin, TimeRefreshPlugin } = await import('../src/index.js');
+    expect(typeof indexPlugin).toBe('function');
+    expect(TimeRefreshPlugin).toBe(indexPlugin);
   });
 });
 

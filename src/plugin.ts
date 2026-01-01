@@ -189,25 +189,38 @@ export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
     return {};
   }
 
+  // Track which messages we've already processed to avoid duplicates
+  const processedMessages = new Set<string>();
+
   return {
     'chat.message': async (_input, output) => {
       if (!config.includeInEveryMessage) {
         return;
       }
 
+      // Avoid processing the same message twice
+      const messageKey = _input.messageID || _input.sessionID;
+      if (processedMessages.has(messageKey)) {
+        return;
+      }
+      processedMessages.add(messageKey);
+
       const now = new Date();
       const timeString = formatTime(now, config);
 
+      // Find the first text part and prepend time to it
       const textParts = output.parts.filter(
         (p): p is { type: 'text'; text: string; id: string; sessionID: string; messageID: string } =>
           p.type === 'text'
       );
 
       if (textParts.length > 0) {
-        const lastTextPart = textParts[textParts.length - 1];
-        lastTextPart.text = `${lastTextPart.text}\n\n${timeString}`;
+        // Prepend to the first text part
+        const firstTextPart = textParts[0];
+        firstTextPart.text = `${timeString}\n\n${firstTextPart.text}`;
       } else {
-        output.parts.push({
+        // Add a new text part at the beginning with just the time
+        output.parts.unshift({
           id: `time-${Date.now()}`,
           sessionID: _input.sessionID,
           messageID: _input.messageID || '',
