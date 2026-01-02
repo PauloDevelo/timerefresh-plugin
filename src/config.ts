@@ -146,9 +146,10 @@ export function loadConfig(userConfig?: Partial<TimeRefreshConfig> | null): Time
  * @param userConfig - Partial user configuration (optional)
  * @returns Object containing the merged config and validation result
  */
-export function loadAndValidateConfig(
-  userConfig?: Partial<TimeRefreshConfig> | null
-): { config: TimeRefreshConfig; validation: ValidationResult } {
+export function loadAndValidateConfig(userConfig?: Partial<TimeRefreshConfig> | null): {
+  config: TimeRefreshConfig;
+  validation: ValidationResult;
+} {
   const config = loadConfig(userConfig);
   const validation = validateConfig(config);
 

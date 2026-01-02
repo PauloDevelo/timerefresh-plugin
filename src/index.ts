@@ -5,11 +5,8 @@
  */
 
 import type { Plugin, PluginInput, Hooks } from '@opencode-ai/plugin';
-import type {
-  TimeRefreshConfig,
-  TimeContext,
-} from './types.js';
-import { loadConfig, validateConfig, DEFAULT_CONFIG } from './config.js';
+import type { TimeRefreshConfig, TimeContext } from './types.js';
+import { loadConfig, validateConfig } from './config.js';
 import { formatTime, createTimeContext } from './formatter.js';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -173,8 +170,11 @@ export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
 
       // Find the last text part and append time to it
       // Or add a new text part with the time
-      const textParts = output.parts.filter((p): p is { type: 'text'; text: string; id: string; sessionID: string; messageID: string } => 
-        p.type === 'text'
+      const textParts = output.parts.filter(
+        (
+          p
+        ): p is { type: 'text'; text: string; id: string; sessionID: string; messageID: string } =>
+          p.type === 'text'
       );
 
       if (textParts.length > 0) {
@@ -189,7 +189,7 @@ export const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
           messageID: _input.messageID || '',
           type: 'text',
           text: timeString,
-        } as typeof output.parts[number]);
+        } as (typeof output.parts)[number]);
       }
     },
   };

@@ -1,10 +1,10 @@
 /**
  * OpenCode Time Refresh Plugin - Minimal Entry Point
- * 
+ *
  * This file exports ONLY the plugin function for OpenCode compatibility.
  * OpenCode iterates over all exports and calls them as plugin functions,
  * so we must not export anything else here.
- * 
+ *
  * For utility functions, import from 'opencode-time-refresh/utils'
  */
 
@@ -69,9 +69,8 @@ function getSystemTimezone(): string {
 }
 
 function formatTime(date: Date, config: TimeRefreshConfig): string {
-  const timezone = config.timezone && isValidTimezone(config.timezone) 
-    ? config.timezone 
-    : getSystemTimezone();
+  const timezone =
+    config.timezone && isValidTimezone(config.timezone) ? config.timezone : getSystemTimezone();
 
   let formatted: string;
   switch (config.format) {
@@ -94,20 +93,20 @@ function formatTime(date: Date, config: TimeRefreshConfig): string {
 function formatCustom(date: Date, format: string, timezone?: string): string {
   const parts = getDateParts(date, timezone);
   let result = format;
-  
+
   const replacements: Record<string, string> = {
-    'YYYY': parts.year.toString().padStart(4, '0'),
-    'YY': (parts.year % 100).toString().padStart(2, '0'),
-    'MM': parts.month.toString().padStart(2, '0'),
-    'M': parts.month.toString(),
-    'DD': parts.day.toString().padStart(2, '0'),
-    'D': parts.day.toString(),
-    'HH': parts.hour.toString().padStart(2, '0'),
-    'H': parts.hour.toString(),
-    'mm': parts.minute.toString().padStart(2, '0'),
-    'm': parts.minute.toString(),
-    'ss': parts.second.toString().padStart(2, '0'),
-    's': parts.second.toString(),
+    YYYY: parts.year.toString().padStart(4, '0'),
+    YY: (parts.year % 100).toString().padStart(2, '0'),
+    MM: parts.month.toString().padStart(2, '0'),
+    M: parts.month.toString(),
+    DD: parts.day.toString().padStart(2, '0'),
+    D: parts.day.toString(),
+    HH: parts.hour.toString().padStart(2, '0'),
+    H: parts.hour.toString(),
+    mm: parts.minute.toString().padStart(2, '0'),
+    m: parts.minute.toString(),
+    ss: parts.second.toString().padStart(2, '0'),
+    s: parts.second.toString(),
   };
 
   for (const [token, value] of Object.entries(replacements)) {
@@ -197,7 +196,9 @@ const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
 
       // Find the first text part
       const textParts = output.parts.filter(
-        (p): p is { type: 'text'; text: string; id: string; sessionID: string; messageID: string } =>
+        (
+          p
+        ): p is { type: 'text'; text: string; id: string; sessionID: string; messageID: string } =>
           p.type === 'text'
       );
 
@@ -221,7 +222,7 @@ const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
           messageID: _input.messageID || '',
           type: 'text',
           text: timeString,
-        } as typeof output.parts[number]);
+        } as (typeof output.parts)[number]);
       }
     },
   };

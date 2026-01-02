@@ -52,24 +52,27 @@ export function getSystemTimezone(): string {
  */
 const FORMAT_TOKENS = [
   'YYYY', // 4-digit year
-  'YY',   // 2-digit year
-  'MM',   // 2-digit month (zero-padded)
-  'M',    // Month (no padding)
-  'DD',   // 2-digit day (zero-padded)
-  'D',    // Day (no padding)
-  'HH',   // 2-digit hour (zero-padded, 24-hour)
-  'H',    // Hour (no padding, 24-hour)
-  'mm',   // 2-digit minute (zero-padded)
-  'm',    // Minute (no padding)
-  'ss',   // 2-digit second (zero-padded)
-  's',    // Second (no padding)
+  'YY', // 2-digit year
+  'MM', // 2-digit month (zero-padded)
+  'M', // Month (no padding)
+  'DD', // 2-digit day (zero-padded)
+  'D', // Day (no padding)
+  'HH', // 2-digit hour (zero-padded, 24-hour)
+  'H', // Hour (no padding, 24-hour)
+  'mm', // 2-digit minute (zero-padded)
+  'm', // Minute (no padding)
+  'ss', // 2-digit second (zero-padded)
+  's', // Second (no padding)
 ] as const;
 
 /**
  * Gets date parts for a given date in a specific timezone.
  * Uses Intl.DateTimeFormat to extract timezone-aware values.
  */
-function getDateParts(date: Date, timezone?: string): {
+function getDateParts(
+  date: Date,
+  timezone?: string
+): {
   year: number;
   month: number;
   day: number;
@@ -92,7 +95,7 @@ function getDateParts(date: Date, timezone?: string): {
   const parts = formatter.formatToParts(date);
 
   const getValue = (type: Intl.DateTimeFormatPartTypes): number => {
-    const part = parts.find(p => p.type === type);
+    const part = parts.find((p) => p.type === type);
     return part ? parseInt(part.value, 10) : 0;
   };
 
@@ -115,7 +118,7 @@ function padZero(num: number, length: number): string {
 
 /**
  * Formats a date using a custom format string with optional timezone.
- * 
+ *
  * Supported tokens:
  * - YYYY: 4-digit year
  * - YY: 2-digit year
@@ -129,11 +132,11 @@ function padZero(num: number, length: number): string {
  * - m: Minute (0-59)
  * - ss: 2-digit second (00-59)
  * - s: Second (0-59)
- * 
+ *
  * Note: Tokens are replaced in order from longest to shortest to prevent
  * partial matches (e.g., YYYY is replaced before YY). Single-letter tokens
  * will be replaced wherever they appear in the format string.
- * 
+ *
  * @param date - The date to format
  * @param format - The format string with tokens
  * @param timezone - Optional IANA timezone (uses system timezone if not provided)
@@ -141,24 +144,24 @@ function padZero(num: number, length: number): string {
  */
 export function formatCustom(date: Date, format: string, timezone?: string): string {
   const parts = getDateParts(date, timezone);
-  
+
   let result = format;
 
   // Replace tokens in order (longer tokens first to avoid partial matches)
   // YYYY before YY, MM before M, etc.
   const replacements: Record<string, string> = {
-    'YYYY': padZero(parts.year, 4),
-    'YY': padZero(parts.year % 100, 2),
-    'MM': padZero(parts.month, 2),
-    'M': parts.month.toString(),
-    'DD': padZero(parts.day, 2),
-    'D': parts.day.toString(),
-    'HH': padZero(parts.hour, 2),
-    'H': parts.hour.toString(),
-    'mm': padZero(parts.minute, 2),
-    'm': parts.minute.toString(),
-    'ss': padZero(parts.second, 2),
-    's': parts.second.toString(),
+    YYYY: padZero(parts.year, 4),
+    YY: padZero(parts.year % 100, 2),
+    MM: padZero(parts.month, 2),
+    M: parts.month.toString(),
+    DD: padZero(parts.day, 2),
+    D: parts.day.toString(),
+    HH: padZero(parts.hour, 2),
+    H: parts.hour.toString(),
+    mm: padZero(parts.minute, 2),
+    m: parts.minute.toString(),
+    ss: padZero(parts.second, 2),
+    s: parts.second.toString(),
   };
 
   // Replace in order (longer tokens first)
@@ -175,16 +178,14 @@ export function formatCustom(date: Date, format: string, timezone?: string): str
 
 /**
  * Creates a TimeContext object with various time representations.
- * 
+ *
  * @param date - The date to create context for
  * @param timezone - Optional IANA timezone (uses system timezone if not provided)
  * @returns TimeContext with all time representations
  */
 export function createTimeContext(date: Date, timezone?: string): TimeContext {
   // Resolve timezone: use provided, or fall back to system
-  const resolvedTimezone = timezone && isValidTimezone(timezone) 
-    ? timezone 
-    : getSystemTimezone();
+  const resolvedTimezone = timezone && isValidTimezone(timezone) ? timezone : getSystemTimezone();
 
   // ISO format (always UTC)
   const iso = date.toISOString();
@@ -224,16 +225,15 @@ export function createTimeContext(date: Date, timezone?: string): TimeContext {
 
 /**
  * Formats a date according to the plugin configuration.
- * 
+ *
  * @param date - The date to format
  * @param config - The plugin configuration
  * @returns Formatted time string with prefix and suffix applied
  */
 export function formatTime(date: Date, config: TimeRefreshConfig): string {
   // Resolve timezone: use config timezone if valid, otherwise system
-  const timezone = config.timezone && isValidTimezone(config.timezone)
-    ? config.timezone
-    : getSystemTimezone();
+  const timezone =
+    config.timezone && isValidTimezone(config.timezone) ? config.timezone : getSystemTimezone();
 
   let formatted: string;
 

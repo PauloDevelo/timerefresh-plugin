@@ -111,8 +111,4 @@ export interface ValidationResult {
 // ============================================================================
 
 // Re-export types from @opencode-ai/plugin for convenience
-export type {
-  Plugin,
-  PluginInput,
-  Hooks,
-} from '@opencode-ai/plugin';
+export type { Plugin, PluginInput, Hooks } from '@opencode-ai/plugin';

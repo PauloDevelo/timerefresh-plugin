@@ -4,14 +4,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import plugin from '../src/plugin.js';
-import {
-  pluginMeta,
-  VERSION,
-  getTimeContext,
-  getFormattedTime,
-  DEFAULT_CONFIG,
-} from '../src/index.js';
-import type { PluginInput, Hooks } from '@opencode-ai/plugin';
+import { pluginMeta, VERSION, getTimeContext, getFormattedTime } from '../src/index.js';
+import type { PluginInput } from '@opencode-ai/plugin';
 
 // Alias for tests
 const TimeRefreshPlugin = plugin;
@@ -165,9 +159,9 @@ describe('TimeRefreshPlugin', () => {
 
       const input = { sessionID: 'session-1', messageID: 'msg-1' };
       const textPart = createMockTextPart('Hello, world!');
-      const output = { 
-        message: {} as any, 
-        parts: [textPart] as any[]
+      const output = {
+        message: {} as any,
+        parts: [textPart] as any[],
       };
 
       await hooks['chat.message']!(input, output);
@@ -184,9 +178,9 @@ describe('TimeRefreshPlugin', () => {
       const hooks = await TimeRefreshPlugin(ctx);
 
       const input = { sessionID: 'session-1', messageID: 'msg-1' };
-      const output = { 
-        message: {} as any, 
-        parts: [] as any[]
+      const output = {
+        message: {} as any,
+        parts: [] as any[],
       };
 
       await hooks['chat.message']!(input, output);
@@ -203,9 +197,9 @@ describe('TimeRefreshPlugin', () => {
 
       const input = { sessionID: 'session-1', messageID: 'msg-1' };
       const textPart = createMockTextPart('Test message');
-      const output = { 
-        message: {} as any, 
-        parts: [textPart] as any[]
+      const output = {
+        message: {} as any,
+        parts: [textPart] as any[],
       };
 
       await hooks['chat.message']!(input, output);
@@ -222,9 +216,9 @@ describe('TimeRefreshPlugin', () => {
       const input = { sessionID: 'session-1', messageID: 'msg-1' };
       const textPart1 = createMockTextPart('First part');
       const textPart2 = createMockTextPart('Second part');
-      const output = { 
-        message: {} as any, 
-        parts: [textPart1, textPart2] as any[]
+      const output = {
+        message: {} as any,
+        parts: [textPart1, textPart2] as any[],
       };
 
       await hooks['chat.message']!(input, output);
@@ -243,15 +237,15 @@ describe('TimeRefreshPlugin', () => {
 
       const input = { sessionID: 'session-1', messageID: 'msg-1' };
       const textPart = createMockTextPart('Hello');
-      const output = { 
-        message: {} as any, 
-        parts: [textPart] as any[]
+      const output = {
+        message: {} as any,
+        parts: [textPart] as any[],
       };
 
       // Call twice with same messageID
       await hooks['chat.message']!(input, output);
       const textAfterFirst = output.parts[0].text;
-      
+
       await hooks['chat.message']!(input, output);
       const textAfterSecond = output.parts[0].text;
 
