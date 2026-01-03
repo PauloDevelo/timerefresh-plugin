@@ -243,3 +243,52 @@ const plugin: Plugin = async (ctx: PluginInput): Promise<Hooks> => {
 
 export default plugin;
 ```
+
+## CI/CD Workflows
+
+### GitHub Actions
+
+The project uses GitHub Actions for continuous integration and automated releases.
+
+#### CI Workflow (`.github/workflows/ci.yml`)
+Runs on every push to `main` and on pull requests:
+- Tests against Node.js 18, 20, and 22
+- Runs linting, build, and tests
+- All checks must pass before merging
+
+#### Release Workflow (`.github/workflows/release.yml`)
+Uses [release-please](https://github.com/google-github-actions/release-please-action) for automated releases:
+- Automatically creates release PRs based on conventional commits
+- Updates CHANGELOG.md and bumps version in package.json
+- When release PR is merged, publishes to npm with provenance
+
+### Conventional Commits
+
+Use conventional commit format for automatic changelog generation:
+
+```bash
+feat: add new feature          # Minor version bump (0.6.0 → 0.7.0)
+fix: fix a bug                 # Patch version bump (0.6.0 → 0.6.1)
+feat!: breaking change         # Major version bump (0.6.0 → 1.0.0)
+docs: update documentation     # No version bump
+chore: update dependencies     # No version bump
+```
+
+### Release Process
+
+1. Make changes using conventional commits
+2. Push to `main` (directly or via PR)
+3. Release-please automatically creates/updates a Release PR
+4. When ready to release, merge the Release PR
+5. GitHub Actions automatically:
+   - Creates a GitHub Release with tag
+   - Publishes to npm with provenance
+   - Updates CHANGELOG.md
+
+### Manual Publishing
+
+If needed, you can still publish manually:
+```bash
+npm run prepublishOnly   # clean + lint + build + test
+npm publish              # publish to npm
+```
