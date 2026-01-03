@@ -55,6 +55,10 @@
   "engines": {
     "node": ">=18"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.0.0"
   },
