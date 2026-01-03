@@ -1,6 +1,6 @@
 {
   "name": "opencode-time-refresh",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OpenCode plugin for automatic time injection into messages",
   "type": "module",
   "main": "dist/plugin.js",
