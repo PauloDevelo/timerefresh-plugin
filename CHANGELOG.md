@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0 (2026-01-03)
+
+
+### Features
+
+* add AGENTS.md with coding guidelines for AI agents in the plugin ([b64c589](https://github.com/PauloDevelo/timerefresh-plugin/commit/b64c58909d896a399e2fc98cd5f4984bb8b98e56))
+* add GitHub Actions CI/CD with automated releases ([d020ffb](https://github.com/PauloDevelo/timerefresh-plugin/commit/d020ffb86bd613a954bf741b7046a0e977dc42e0))
+* add linting and formatting scripts to package.json ([37c9ff7](https://github.com/PauloDevelo/timerefresh-plugin/commit/37c9ff7c7b24880b22be597462111998eccd46d6))
+* update to version 0.5.0 with breaking changes and improved plugin functionality ([01346be](https://github.com/PauloDevelo/timerefresh-plugin/commit/01346be4e6d687d99424bbcae335030996aa89e6))
+* update to version 0.5.0 with breaking changes to message handling and improved time injection ([f41be9d](https://github.com/PauloDevelo/timerefresh-plugin/commit/f41be9dd17d199c6f2b20684656440a9e877604f))
+* update to version 0.6.0 with breaking changes to exports and improved plugin functionality ([b228fbb](https://github.com/PauloDevelo/timerefresh-plugin/commit/b228fbbbe4389306409b14e9f32cdaba23e086db))
+* update to version 0.6.1 with changes to message handling and deduplication of timestamps ([b44a124](https://github.com/PauloDevelo/timerefresh-plugin/commit/b44a12454410af3009bc551cad53a79c37b5e0d1))
+* update to version 0.6.2 with fixes for duplicate timestamps and improved deduplication logic ([d4ddd05](https://github.com/PauloDevelo/timerefresh-plugin/commit/d4ddd051e9e9b31040257d52930f42344c4a9a99))
+* update to version 0.6.3 with root cause fix for plugin export to prevent duplicate execution ([6f97935](https://github.com/PauloDevelo/timerefresh-plugin/commit/6f97935bda97c3eb2ced884ef8de94f15b3a4851))
+
 ## [0.6.3] - 2026-01-01
 
 ### Fixed
