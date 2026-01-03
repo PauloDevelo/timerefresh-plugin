@@ -40,12 +40,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/opencode-ai/opencode-time-refresh.git"
+    "url": "https://github.com/PauloDevelo/timerefresh-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/opencode-ai/opencode-time-refresh/issues"
+    "url": "https://github.com/PauloDevelo/timerefresh-plugin/issues"
   },
-  "homepage": "https://github.com/opencode-ai/opencode-time-refresh#readme",
+  "homepage": "https://github.com/PauloDevelo/timerefresh-plugin#readme",
   "files": [
     "dist",
     "README.md",
